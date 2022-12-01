@@ -13,6 +13,10 @@ from .views import ReservaView
 from .views import DetalleInventarioView
 from .views import InventarioView
 from .views import MedioPagoView
+from .views import ServicioExtraView
+from .views import TipoServicioView
+from .views import DispServView
+
 
 urlpatterns={
     path('zonas/', ZonaView.as_view(), name='zona'),
@@ -25,7 +29,7 @@ urlpatterns={
     path('categorias/<int:id>', CategoriaView.as_view(), name='cateogria_filtrar'),
     path('empleados/', EmpleadoView.as_view(), name='empleado'),
     path('empleados/<int:id>', EmpleadoView.as_view(), name='empleado_filtrar'),
-    path('usuarios/', UsuarioView.as_view(), name='usuaio'),
+    path('usuarios/', UsuarioView.as_view(), name='usuario'),
     path('usuarios/<int:id>', UsuarioView.as_view(), name='usuario_filtrar'),
     path('tipoUsuarios/', TipoUsuarioView.as_view(), name='tipoUsuario'),
     path('tipoUsuarios/<int:id>', TipoUsuarioView.as_view(), name='tipoUsuaio_filtrar'),
@@ -42,5 +46,11 @@ urlpatterns={
     path('inventarios/', InventarioView.as_view(), name='inventario'),
     path('inventarios/<int:id>', InventarioView.as_view(), name='inventario_filtrar'),
     path('medioPagos/', MedioPagoView.as_view(), name='medioPago'),
-    path('medioPagos/<int:id>', MedioPagoView.as_view(), name='medioPago_filtrar')
+    path('medioPagos/<int:id>', MedioPagoView.as_view(), name='medioPago_filtrar'),
+    path('servicioExtras/', ServicioExtraView.as_view(), name='servicio_extra'),
+    path('servicioExtras/<int:id>', ServicioExtraView.as_view(), name='servicio_extra_filtrar'),
+    path('tipoServicios/', TipoServicioView.as_view(), name='tipoServicio'),
+    path('tipoServicios/<int:id>', TipoServicioView.as_view(), name='tipoServicio_filtrar'),
+    path('detServ/', DispServView.as_view(), name='detalleServicio'),
+    path('detServ/<int:id>', DispServView.as_view(), name='detalleServicio_filtrar')
 }

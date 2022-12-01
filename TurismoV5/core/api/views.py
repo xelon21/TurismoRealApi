@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from core.models import Zona, Departamento, Articulo, Categoria, Empleado, Usuario, TipoUsuario, GastoDepto, MedioPago, Estado, Huesped, Reserva
-from core.models import DetInventario, Inventario, MedioPago
+from core.models import DetInventario, Inventario, MedioPago, ServicioExtra, TipoServ, DispServ
 
 from django.db import connection
 
@@ -115,7 +115,7 @@ class DepartamentoView(View):
     def post(self,request):
         jd = json.loads(request.body)
         print(jd)
-        zona = Zona.objects.get(id_zona=jd['id_zona'])   
+        zona = Zona.objects.get(id_zona=jd['id_zona_id'])   
         Departamento.objects.create(descripcion=jd['descripcion'], valor_noche=jd['valor_noche'], id_zona=zona,
                                      m2=jd['m2'], imagen_url=jd['imagen_url'], direccion=jd['direccion'], capacidad=jd['capacidad'],
                                      q_banos=jd['q_banos'], q_plazas=jd['q_plazas'])            
@@ -453,9 +453,9 @@ class GastoDeptoView(View):
             return JsonResponse(datosOrdenados)
     def post(self,request):
         jd = json.loads(request.body)
-        departamento = Departamento.objects.get(id_depto=jd['id_depto'])
-        empleado = Empleado.objects.get(id_empleado= jd['id_empleado'])
-        medioPago = MedioPago.objects.get(id_mp=jd['id_medio_pago']) 
+        departamento = Departamento.objects.get(id_depto=jd['id_depto_id'])
+        empleado = Empleado.objects.get(id_empleado= jd['id_empleado_id'])
+        medioPago = MedioPago.objects.get(id_mp=jd['id_medio_pago_id']) 
         GastoDepto.objects.create(id_depto=departamento, id_empleado=empleado, id_medio_pago=medioPago,
                             concepto=jd['concepto'], descripcion=jd['descripcion'], valor_pago=jd['valor_pago'],
                             fecha_pago=jd['fecha_pago'])
@@ -556,11 +556,11 @@ class HuespedView(View):
         else:
             huespedes = list(Huesped.objects.values())
             if len(huespedes) > 0:
-                datos = {'huespedes': huespedes}
-                datosOrdenados = {'huespedes' : (sorted(datos["huespedes"],key=lambda d: d["id_huesped"]))}
+                datos = {'huesped': huespedes}             
+                datos2 = {'huesped' : (sorted(datos["huesped"],key=lambda d: d["id_huesped"]))}                        
             else:
                 datos = {'message': "No se encontraron huespedes"}
-            return JsonResponse(datosOrdenados)
+            return JsonResponse(datos2)
     def post(self,request):
         jd = json.loads(request.body)
         usuario = Usuario.objects.get(id_usuario=jd['id_usuario'])   
@@ -612,19 +612,18 @@ class ReservaView(View):
         else:
             reservas = list(Reserva.objects.values())
             if len(reservas) > 0:
-                datos = {'reservas': reservas}
-                print(datos)
-                datosOrdenados = {'reservas' : (sorted(datos["reservas"],key=lambda d: d["id_reserva"]))}
-                print(datosOrdenados)
+                datos = {'reservas': reservas}                
+                datosOrdenados = {'reservas' : (sorted(datos["reservas"],key=lambda d: d["id_reserva"]))}                
             else:
                 datos = {'message': "No se encontraron reservas"}
             return JsonResponse(datosOrdenados)
     def post(self,request):
         jd = json.loads(request.body)
+        print(jd)
         huesped = Huesped.objects.get(id_huesped=jd['id_huesped'])  
         estado = Estado.objects.get(id_estado=jd['id_estado'])  
         depto = Departamento.objects.get(id_depto=jd['id_depto']) 
-        Reserva.objects.create(f_checkin=jd['f_checkin'], f_checkout=jd['f_checkout'], id_huesped=huesped,
+        Reserva.objects.create(f_checkin=jd['f_checkin'], f_checkout=jd['f_checkout'], id_huesped=huesped, 
                                valor_reserva=jd['valor_reserva'], valor_total=jd['valor_total'],
                                id_estado=estado, id_depto=depto)
         datos = {'message': "Success"}
@@ -747,3 +746,93 @@ class MedioPagoView(View):
         MedioPago.objects.create(descripcion=jd['descripcion'])
         datos = {'message': "Success"}
         return JsonResponse(datos)   
+
+class ServicioExtraView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, id=0):
+        if(id > 0):
+            servicioExtras = list(ServicioExtra.objects.filter(id_servicio=id).values())
+            if len(servicioExtras) > 0:
+                servicioExtra = servicioExtras[0]
+                datos = {'servicioExtras': servicioExtra}
+            else:
+                datos = {'message': "No se encontraron servicios extras"}
+            return JsonResponse(datos)
+        else:
+            servicioExtras = list(ServicioExtra.objects.values())
+            if len(servicioExtras) > 0:
+                datos = {'servicioExtras': servicioExtras}
+                datosOrdenados = {'servicioExtras' : (sorted(datos["servicioExtras"],key=lambda d: d["id_servicio"]))}
+            else:
+                datos = {'message': "No se encontraron servicios extras"}
+            return JsonResponse(datosOrdenados)
+    def post(self,request):
+        jd = json.loads(request.body)       
+        ServicioExtra.objects.create( id_tipo_serv=jd['id_tipo_serv'], tarifa=jd['tarifa'], fecha_pago=jd['fecha_pago'])
+        datos = {'message': "Success"}
+        return JsonResponse(datos)   
+
+class TipoServicioView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, id=0):
+        if(id > 0):
+            tipoServicios = list(TipoServ.objects.filter(id_tipo=id).values())
+            if len(tipoServicios) > 0:
+                tipoServicio = tipoServicios[0]
+                datos = {'tipoServicios': tipoServicio}
+            else:
+                datos = {'message': "No se encontraron Tipos Servicios"}
+            return JsonResponse(datos)
+        else:
+            tipoServicios = list(TipoServ.objects.values())
+            if len(tipoServicios) > 0:
+                datos = {'tipoServicios': tipoServicios}
+                datosOrdenados = {'tipoServicios' : (sorted(datos["tipoServicios"],key=lambda d: d["id_tipo"]))}
+            else:
+                datos = {'message': "No se encontraron Tipos Servicios"}
+            return JsonResponse(datosOrdenados)
+    def post(self,request):
+        jd = json.loads(request.body)
+        TipoServ.objects.create(descripcion=jd['descripcion'])
+        datos = {'message': "Success"}
+        return JsonResponse(datos)
+
+class DispServView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, id=0):
+        if(id > 0):
+            dispServs = list(DispServ.objects.filter(id_disp_serv=id).values())
+            if len(dispServs) > 0:
+                dispServ = dispServs[0]
+                datos = {'dispServs': dispServ}
+            else:
+                datos = {'message': "No se encontraron dispServs"}
+            return JsonResponse(datos)
+        else:
+            dispServs = list(DispServ.objects.values())
+            if len(dispServs) > 0:
+                datos = {'dispServs': dispServs}
+                datosOrdenados = {'dispServs' : (sorted(datos["dispServs"],key=lambda d: d["id_disp_serv"]))}
+            else:
+                datos = {'message': "No se encontraron dispServs"}
+            return JsonResponse(datosOrdenados)
+    def post(self,request):
+        jd = json.loads(request.body) 
+        print (jd)
+        servicio = ServicioExtra.objects.get(id_servicio=jd['id_servicio_id']) 
+        zona = Zona.objects.get(id_zona=jd['id_zona_id']) 
+        DispServ.objects.create(id_servicio=servicio, id_zona=zona)
+        datos = {'message': "Success"}
+        return JsonResponse(datos)
