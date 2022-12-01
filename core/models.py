@@ -77,13 +77,14 @@ class DetPg(models.Model):
         unique_together = (('id_reserva', 'id_pg'),)
 
 class DetServicio(models.Model):
-    id_servicio = models.OneToOneField('ServicioExtra', models.DO_NOTHING, db_column='id_servicio', primary_key=True)
+    id_det_servicio = models.BigAutoField(primary_key=True)
+    id_servicio = models.ForeignKey('ServicioExtra', models.DO_NOTHING, db_column='id_servicio')
     id_reserva = models.ForeignKey('Reserva', models.DO_NOTHING, db_column='id_reserva')
 
     class Meta:
         managed = False
         db_table = 'det_servicio'
-        unique_together = (('id_servicio', 'id_reserva'),)
+       
 
 class Empleado(models.Model):
     id_empleado = models.BigAutoField(primary_key=True)
@@ -251,3 +252,18 @@ class Zona(models.Model):
     class Meta:
         managed = False
         db_table = 'zona'
+
+class PagoSueldos(models.Model):
+    id_pago_sueldo =  models.BigAutoField(primary_key=True)
+    id_zona = models.ForeignKey('Zona', models.DO_NOTHING, db_column='id_zona')
+    id_empleado = models.ForeignKey('Empleado', models.DO_NOTHING, db_column='id_empleado')
+    id_medio_pago = models.ForeignKey('MedioPago', models.DO_NOTHING, db_column='id_medio_pago')
+    descripcion = models.CharField(max_length=200)
+    valor_pago = models.BigIntegerField()
+    fecha_pago = models.DateField()
+
+    class Meta:
+        managed = False
+        db_table = 'pago_sueldos'
+
+
