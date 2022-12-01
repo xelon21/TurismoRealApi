@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from core.models import Zona, Departamento, Articulo, Categoria, Empleado, Usuario, TipoUsuario, GastoDepto, MedioPago, Estado, Huesped, Reserva
-from core.models import DetInventario, Inventario, MedioPago, ServicioExtra, TipoServ, DispServ
+from core.models import DetInventario, Inventario, MedioPago, ServicioExtra, TipoServ, DispServ, PagoSueldos, DetServicio
 
 from django.db import connection
 
@@ -162,7 +162,7 @@ class ArticuloView(View):
             articulos = list(Articulo.objects.filter(id_articulo=id).values())
             if len(articulos) > 0:
                 articulo = articulos
-                datos = {'Articulo': articulo}
+                datos = {'articulo': articulo}
             else:
                 datos = {'message': "No se enconto el articulo"}
             return JsonResponse(datos)
@@ -564,7 +564,7 @@ class HuespedView(View):
     def post(self,request):
         jd = json.loads(request.body)
         usuario = Usuario.objects.get(id_usuario=jd['id_usuario'])   
-        Huesped.objects.create(nombre=jd['nombre'], apellido=jd['apellido'], rut=['rut'],
+        Huesped.objects.create(nombre=jd['nombre'], apellido=jd['apellido'], rut=jd['rut'],
                                direccion=jd['direccion'], telefono=jd['telefono'], id_usuario=usuario)
         datos = {'message': "Success"}
         return JsonResponse(datos)
@@ -630,11 +630,12 @@ class ReservaView(View):
         return JsonResponse(datos)
     def put(self,request, id):
         jd = json.loads(request.body)
+        print (jd)
         reservas = list(Reserva.objects.filter(id_reserva=id).values())
         if len(reservas) > 0:
-            huesped = Huesped.objects.get(id_huesped=jd['id_huesped'])  
-            estado = Estado.objects.get(id_estado=jd['id_estado'])  
-            depto = Departamento.objects.get(id_depto=jd['id_depto']) 
+            huesped = Huesped.objects.get(id_huesped=jd['id_huesped_id'])  
+            estado = Estado.objects.get(id_estado=jd['id_estado_id'])  
+            depto = Departamento.objects.get(id_depto=jd['id_depto_id']) 
             reserva = Reserva.objects.get(id_reserva = id)
             reserva.f_checkin = jd['f_checkin']
             reserva.f_checkout = jd['f_checkout']
@@ -837,3 +838,68 @@ class DispServView(View):
         datos = {'message': "Success"}
         return JsonResponse(datos)
 
+class PagoSueldosView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, id=0):
+        if(id > 0):
+            pagoSueldos = list(PagoSueldos.objects.filter(id_pago_sueldo=id).values())
+            if len(pagoSueldos) > 0:
+                pagoSueldo = pagoSueldos[0]
+                datos = {'pagoSueldos': pagoSueldo}
+            else:
+                datos = {'message': "No se encontraron Sueldos"}
+            return JsonResponse(datos)
+        else:
+            pagoSueldos = list(PagoSueldos.objects.values())
+            if len(pagoSueldos) > 0:
+                datos = {'pagoSueldos': pagoSueldos}
+                datosOrdenados = {'pagoSueldos' : (sorted(datos["pagoSueldos"],key=lambda d: d["id_pago_sueldo"]))}
+            else:
+                datos = {'message': "No se encontraron Sueldos"}
+            return JsonResponse(datosOrdenados)
+    def post(self,request):
+        jd = json.loads(request.body)
+        zona = Zona.objects.get(id_zona=jd['id_zona_id'])
+        empleado = Empleado.objects.get(id_empleado= jd['id_empleado_id'])
+        medioPago = MedioPago.objects.get(id_mp=jd['id_medio_pago_id']) 
+        PagoSueldos.objects.create(id_zona=zona, id_empleado=empleado, id_medio_pago=medioPago,
+                            descripcion=jd['descripcion'], valor_pago=jd['valor_pago'],
+                            fecha_pago=jd['fecha_pago'])
+        datos = {'message': "Success"}
+        return JsonResponse(datos)
+
+class DetServicioView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, id=0):
+        if(id > 0):
+            detServicios = list(DetServicio.objects.filter(id_disp_serv=id).values())
+            if len(detServicios) > 0:
+                detServicio = detServicios[0]
+                datos = {'detServicios': detServicio}
+            else:
+                datos = {'message': "No se encontraron detServicios"}
+            return JsonResponse(datos)
+        else:
+            detServicios = list(DetServicio.objects.values())
+            if len(detServicios) > 0:
+                datos = {'detServicios': detServicios}
+                datosOrdenados = {'detServicios' : (sorted(datos["detServicios"],key=lambda d: d["id_det_servicio"]))}
+            else:
+                datos = {'message': "No se encontraron detServicios"}
+            return JsonResponse(datosOrdenados)
+    def post(self,request):
+        jd = json.loads(request.body) 
+        print (jd)
+        servicio = ServicioExtra.objects.get(id_servicio=jd['id_servicio']) 
+        reserva = Reserva.objects.get(id_reserva=jd['id_reserva']) 
+        DetServicio.objects.create(id_servicio=servicio, id_reserva=reserva)
+        datos = {'message': "Success"}
+        return JsonResponse(datos)

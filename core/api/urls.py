@@ -16,7 +16,8 @@ from .views import MedioPagoView
 from .views import ServicioExtraView
 from .views import TipoServicioView
 from .views import DispServView
-
+from .views import PagoSueldosView
+from .views import DetServicioView
 
 urlpatterns={
     path('zonas/', ZonaView.as_view(), name='zona'),
@@ -52,5 +53,9 @@ urlpatterns={
     path('tipoServicios/', TipoServicioView.as_view(), name='tipoServicio'),
     path('tipoServicios/<int:id>', TipoServicioView.as_view(), name='tipoServicio_filtrar'),
     path('detServ/', DispServView.as_view(), name='detalleServicio'),
-    path('detServ/<int:id>', DispServView.as_view(), name='detalleServicio_filtrar')
+    path('detServ/<int:id>', DispServView.as_view(), name='detalleServicio_filtrar'),
+    path('pagoSueldos/', PagoSueldosView.as_view(), name='pago_sueldo' ),
+    path('pagoSueldos/<int:id>', PagoSueldosView.as_view(), name='pago_sueldo_filtrar'),
+    path('detServicios/', DetServicioView.as_view(), name= "detalleServicio"),
+    path('detServicios/<int:id>', DetServicioView.as_view(), name="detalleServicio_filtrar")
 }
